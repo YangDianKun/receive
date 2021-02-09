@@ -1,8 +1,8 @@
 /*************************************** Copyright (c)******************************************************
-** File name            :   main.h
+** File name            :   hal_power.h
 ** Latest modified Date :   2018-06-03
 ** Latest Version       :   0.1
-** Descriptions         :   主文件，包含应用代码
+** Descriptions         :   mcu 电源管理
 **
 **--------------------------------------------------------------------------------------------------------
 ** Created by           :   YangDianKun
@@ -14,43 +14,21 @@
 ** Copyright            :  
 ** Author Email         :   1163101403@qq.com
 **********************************************************************************************************/
-#ifndef __MAIN_H
-#define __MAIN_H
+#ifndef __HAL_POWER_H
+#define __HAL_POWER_H
 #include "stm32f10x.h"
 
 
+/* 睡眠模式参数宏定义 */
+#define PWR_SLEEPEntry_WFI         ((uint8_t)0x01)   // 中断唤醒
+#define PWR_SLEEPEntry_WFE         ((uint8_t)0x02)   // 事件唤醒
+#define SysCtrl_SLEEPONEXIT_Set    ((u16)0x0002)     // 此模式不会执行后台任务，即 main while(1){...}
+#define SysCtrl_SLEEPDEEP_Set      ((u16)0x0004)     // 立即进入睡眠
 
 
-
-
-/* 系统模式定义 */
-#define SYS_NORMAL              0      //<! 正常模式
-#define SYS_PARAM_SET           1      //<! 系统参数设置
-#define SYS_LOW_POWER           3      //<! 系统进入低功耗
-#define SYS_ERR_MANAGE          4      //<! 系统故障管理
-
-
-/* 系统故障码定义 */
-#define SYS_OK              (uint8_t)(0x00)   //<! 系统正常
-#define SYS_KEY_ERR         (uint8_t)(0x01)   //<! 按键故障
-#define SYS_CAN_ERR         (uint8_t)(0x02)   //<! CAN 硬件故障
-#define SYS_WL_ERR          (uint8_t)(0x04)   //<! 无线模块故障
-
-
-
-/* 系统状态参数 */
-typedef struct
-{
-	uint8_t mode;
-	uint8_t state;
-	uint8_t err;
-}ActParam_t;
-
-
-
-//
-void system_idle(void);
+/* 函数声明 */
+void PWR_EnterSleepMode(uint32_t SysCtrl_Set, uint8_t PWR_SLEEPEntry);
+void PWR_EnterStandbyMode(void);
 
 #endif
-
 

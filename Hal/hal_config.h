@@ -23,12 +23,31 @@
 #include <math.h>
 
 
+
+/* 布尔常量值 */
+#ifndef TURE
+#define TURE 1
+#endif
+
+#ifndef FLASE
+#define FLASE 0
+#endif
+
+#ifndef NULL
+#define NULL (void *)0
+#endif
+
+
+/* 包含硬件驱动 */
+#include "hal_config.h"
 #include "hal_delay.h"
 #include "hal_led.h"
-#include "hal_usart.h"
-#include "hal_key.h"
+//#include "hal_key.h"
 #include "hal_tim.h"
-#include "hal_adc.h"
+//#include "hal_adc.h"
+#include "hal_usart.h"
+#include "hal_can.h"
+#include "hal_cpu_flash.h"
 
 
 /* 开关全局中断的宏 */

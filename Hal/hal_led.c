@@ -33,8 +33,6 @@
 #define LED_PORT_RCC          ( RCC_APB2Periph_GPIOC )
 
 
-// led设备组管理
-Led_t s_Led[LED_NUM];
 
 
 /**********************************************************************************************************
@@ -157,48 +155,6 @@ void led_toggle (uint8_t led_id)
 	}
 }
 
-/**********************************************************************************************************
-** Function name        :   led_single_blink
-** Descriptions         :   led 单次闪烁
-** parameters           :   无
-** Returned value       :   无
-***********************************************************************************************************/
-void led_single_blink(uint8_t led_id, uint8_t cnt)
-{
-	if (led_id == LED_1)
-	{
-		GPIO_ResetBits(LED1_PORT, LED1_PIN);
-	}
-	else if (led_id == LED_2)
-	{
-		GPIO_ResetBits(LED2_PORT, LED2_PIN);
-	}
-	else if (led_id == LED_3)
-	{
-		GPIO_ResetBits(LED3_PORT, LED3_PIN);
-	}
-	
-	s_Led[led_id].count = cnt;
-			
-}
-
-/**********************************************************************************************************
-** Function name        :   led_scan
-** Descriptions         :   非阻塞扫描所有led，被定时器周期调用
-** parameters           :   无
-** Returned value       :   无
-***********************************************************************************************************/
-void led_scan(void)
-{
-	uint8_t i;
-	for (i = 0; i < LED_NUM; i++)
-	{
-		if (s_Led[i].count > 0 && --s_Led[i].count == 0)
-		{
-			led_off(i);
-		}
-	}
-}
 
 
 

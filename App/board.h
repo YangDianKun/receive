@@ -18,15 +18,7 @@
 #define __BOARD_H
 
 
-/* 包含硬件驱动 */
-#include "hal_delay.h"
-#include "hal_led.h"
-//#include "hal_key.h"
-#include "hal_tim.h"
-//#include "hal_adc.h"
-#include "hal_usart.h"
-#include "hal_can.h"
-#include "hal_cpu_flash.h"
+#include "hal_config.h"
 
 
 #include "main.h"
@@ -34,8 +26,6 @@
 #include "wireless433.h"
 
 
-//#define ENABLE_INT()	__set_PRIMASK(0)	/* 使能全局中断 */
-//#define DISABLE_INT()	__set_PRIMASK(1)	/* 禁止全局中断 */
 
 /* 设备信息 */
 #define FIRMWARE_VERSION           " FW :     1.2.0"
@@ -61,7 +51,7 @@
 
 /* 函数声明 */
 int board_init(void);
-
+void SP706S_WatchDogFree(void);
 	
 
 #endif

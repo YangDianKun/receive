@@ -24,63 +24,132 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h" 
 #include "board.h"
+#include "handle.h"
+
+
+#define USART_BUF_SIZE      8
+
+static uint8_t uartBuf[USART_BUF_SIZE];
+static uint8_t rData;
+static uint8_t rStatus = 0, rDataCnt = 0, uartBufFlag = 0;
 
 
 
- 
-void NMI_Handler(void)
+/**********************************************************************************************************
+** Function name        :   USART2_IRQHandler
+** Descriptions         :   
+** parameters           :   无
+** Returned value       :   无
+***********************************************************************************************************/
+void USART2_IRQHandler(void)                	
 {
+	if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  // 接收数据判断
+	{
+		rData = USART_ReceiveData(USART2);        // 读取数据，自动清除 USART_IT_RXNE 标志
+		//if (uartBufFlag)
+		{
+			if (0 == rStatus)                     // 数据帧同步
+			{
+				if (0xD1 == rData)                // 接收端数据头
+					rStatus = 1;
+			}
+			else if (1 == rStatus)                // 接收数据
+			{
+				if (rDataCnt < USART_BUF_SIZE)
+				{
+					uartBuf[rDataCnt++] = rData;   // 接收数据到缓冲区
+				}
+			}	
+		}
+	}
+	else if (USART_GetITStatus(USART2,USART_IT_IDLE) !=  RESET)  // 数据空闲判断
+	{
+		USART_ReceiveData(USART2);   // 读取数据，自动清除 USART_IT_RXNE 标志
+		rStatus = 0;                 // 清除接收状态机
+		if (rDataCnt > 0)            // 接收数据计数判断
+		{
+			rDataCnt = 0;            // 接收数据计数清零
+			//uartBufFlag = 1;
+			led_toggle(LED_2);           // led2 指示灯
+			rmf_option_frame_handle((RemoteFrame_t *)uartBuf); // 数据帧解析
+		}
+	}
+} 
+
+/**********************************************************************************************************
+** Function name        :   TIM4_IRQHandler
+** Descriptions         :   TIM4中断函数处理函数
+** parameters           :   无
+** Returned value       :   无
+***********************************************************************************************************/
+void TIM4_IRQHandler (void)
+{
+	if (TIM_GetITStatus(TIM4, TIM_IT_Update) != RESET)
+	{
+		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
+		
+		led_toggle(LED_1);      // 系统运行指示 led
+		SP706S_WatchDogFree();  // 喂狗
+	}
 }
  
 void HardFault_Handler(void)
 {
-  /* Go to infinite loop when Hard Fault exception occurs */
-  while (1)
-  {
-	#ifdef BOARD_ERR_DISP
-	// "HardFault_Handler"
-	  led_on(LED_3);
-	#endif
-  }
+	/* Go to infinite loop when Hard Fault exception occurs */
+	led_off(LED_ALL);
+	while (1)
+	{
+		led_on(LED_3);
+		#ifdef BOARD_ERR_DISP
+		// "HardFault_Handler"
+		#endif
+	}
 }
  
 void MemManage_Handler(void)
 {
   /* Go to infinite loop when Memory Manage exception occurs */
-  while (1)
-  {
-	#ifdef BOARD_ERR_DISP
-	// "MemManage_Handler"
-	led_on(LED_3);
-	#endif
-  }
+	led_off(LED_ALL);
+	while (1)
+	{
+		led_on(LED_3);
+		#ifdef BOARD_ERR_DISP
+		// "MemManage_Handler"
+		#endif
+	}
 }
 
  
 void BusFault_Handler(void)
 {
   /* Go to infinite loop when Bus Fault exception occurs */
-  while (1)
-  {
-	#ifdef BOARD_ERR_DISP
-	// "BusFault_Handler"
-	led_on(LED_3);
-	#endif
-  }
+	led_off(LED_ALL);
+	while (1)
+	{
+		led_on(LED_3);
+		#ifdef BOARD_ERR_DISP
+		// "BusFault_Handler"
+		#endif
+	}
 }
  
 void UsageFault_Handler(void)
 {
   /* Go to infinite loop when Usage Fault exception occurs */
-  while (1)
-  {
-	#ifdef BOARD_ERR_DISP
-	// "UsageFault_Handler"
-	led_on(LED_3);	  
-	#endif
-  }
+	led_off(LED_ALL);
+	while (1)
+	{
+		led_on(LED_3);
+		#ifdef BOARD_ERR_DISP
+		// "UsageFault_Handler"  
+		#endif
+	}
 }
  
+void NMI_Handler(void)
+{
+}
+
 void SVC_Handler(void)
 {
 }

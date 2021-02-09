@@ -19,12 +19,14 @@
 #include "stdio.h"
 
 
+
+
+
 typedef struct
 {
 	uint8_t cmdOpt;
 	uint8_t canOpt[2];
 }OptRelatTable_t;
-
 
 
 
@@ -172,8 +174,7 @@ int8_t can_transmit_to_bus (uint8_t a, uint8_t b)
 	buf[0] = a;
 	buf[1] = b;
 	
-	ret = can_send_msg(buf, 2, 255); // 向 can 总线发送数据
-	led_single_blink(LED_2, 2);    // can 发送指示灯
+	ret = can_send_msg(buf, 2, 0); // 向 can 总线发送数据
 	
 	return ret;
 }

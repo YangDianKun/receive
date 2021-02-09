@@ -49,10 +49,7 @@ int fputc(int ch, FILE *f)
 #endif
 
 
-#define USART_BUF_SIZE      32
 
-uint8_t uartBuf[USART_BUF_SIZE];
-uint8_t rStatus, rData, rDataCnt, uartBufFlag;
 
 
 
@@ -110,7 +107,7 @@ int8_t usart2_init (uint32_t baud)
     //Usart1 NVIC 配置
     NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0 ;//抢占优先级3
-	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;		  //子优先级3
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;		  //子优先级3
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;			  //IRQ通道使能
 	NVIC_Init(&NVIC_InitStructure);	                          //根据指定的参数初始化VIC寄存器
 
@@ -121,9 +118,6 @@ int8_t usart2_init (uint32_t baud)
 	
 	//USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);  //开启串口接受中断
 	USART_Cmd(USART2, ENABLE);                      //使能串口1 
-	
-	uartBufFlag = 0;
-	rStatus = 0;
 
     return 0;
 }
@@ -169,7 +163,7 @@ int8_t usart2_rx_byte(uint8_t *oneByte, uint32_t timOut)
 }
 
 /**********************************************************************************************************
-** Function name        :   bsp_HardUsart2Transmit
+** Function name        :   usart2_tx_buf
 ** Descriptions         :   
 ** parameters           :   无
 ** Returned value       :   无
@@ -197,76 +191,4 @@ void usart2_it_rxBuf_startup (FunctionalState newState)
 	USART_ITConfig(USART2, USART_IT_RXNE, newState); 
 }
 
-/**********************************************************************************************************
-** Function name        :   usart2_rxBuf_isOk
-** Descriptions         :   
-** parameters           :   无
-** Returned value       :   无
-***********************************************************************************************************/
-uint8_t usart2_it_rxBuf_isOk(void)
-{
-	return uartBufFlag;
-}
 
-/**********************************************************************************************************
-** Function name        :   usart2_rxBuf_isOk
-** Descriptions         :   
-** parameters           :   无
-** Returned value       :   无
-***********************************************************************************************************/
-void usart2_it_rxBuf_clear(void)
-{
-	uartBufFlag = 0;
-}
-
-/**********************************************************************************************************
-** Function name        :   usart2_rxBuf_isOk
-** Descriptions         :   
-** parameters           :   无
-** Returned value       :   无
-***********************************************************************************************************/
-uint8_t * usart2_it_rxBuf(void)
-{
-	return uartBuf;
-}
-
-/**********************************************************************************************************
-** Function name        :   USART2_IRQHandler
-** Descriptions         :   
-** parameters           :   无
-** Returned value       :   无
-***********************************************************************************************************/
-void USART2_IRQHandler(void)                	
-{
-	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  
-	{
-		rData = USART_ReceiveData(USART2);
-		
-		if(uartBufFlag) return ;
-		
-		if(0 == rStatus)
-		{
-			if(0xD1 == rData)
-				rStatus = 1;
-		}
-		else if(1 == rStatus)
-		{
-			if(rDataCnt < USART_BUF_SIZE)
-			{
-				uartBuf[rDataCnt++] = rData;
-			}
-		}	
-	}
-	else if (USART_GetITStatus(USART2,USART_IT_IDLE) !=  RESET)
-	{
-		
-		USART_ReceiveData(USART2);
-	
-		rStatus = 0;
-		if(rDataCnt > 0)
-		{
-			rDataCnt = 0;
-			uartBufFlag = 1;
-		}
-	}
-} 

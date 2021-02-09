@@ -1,8 +1,8 @@
 /*************************************** Copyright (c)******************************************************
-** File name            :   board.c
+** File name            :   hal_power.c
 ** Latest modified Date :   2018-06-03
 ** Latest Version       :   0.1
-** Descriptions         :   主文件，包含应用代码
+** Descriptions         :   mcu 电源管理
 **
 **--------------------------------------------------------------------------------------------------------
 ** Created by           :   YangDianKun
@@ -14,95 +14,56 @@
 ** Copyright            :  
 ** Author Email         :   1163101403@qq.com
 **********************************************************************************************************/
-#include "board.h"
+#include "hal_power.h"
 
 
 
-static void _board_gpio_init (void);
 
 /**********************************************************************************************************
-** Function name        :   board_init
-** Descriptions         :   
+** Function name        :   PWR_EnterSleepMode
+** Descriptions         :   进入睡眠模式
 ** parameters           :   无
 ** Returned value       :   无
 ***********************************************************************************************************/
-int board_init(void)
+void PWR_EnterSleepMode(uint32_t SysCtrl_Set, uint8_t PWR_SLEEPEntry)
 {
-	/* NVIC 中断分组 */
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
-	
-//	GPIO_DeInit(GPIOA);
-//	GPIO_DeInit(GPIOB);
-//	GPIO_DeInit(GPIOC);
-//	GPIO_AFIODeInit();
-	
-	/* 板载GPIO初始化 */
-	_board_gpio_init();
-	
-	/* 精确延时函数初始化 */
-	delay_init();
-	
-	/* 串口初始化 */
-	usart2_init(9600);
-	usart2_it_rxBuf_startup(ENABLE);	
-	
-	
-	/* led初始化 */
-	led_init();
-	
-	/* 射频模块初始化 */
-	if (wl_mode_init() < 0)
-	{
-		// 射频模块故障
-		//while(1);
-	}
-	
-	/* CAN 通讯初始化 */
-	can_init();
-	
-	
-	/* 定时器初始化 */
-	timer4_init();
-	
-	return 0;
+    if (SysCtrl_Set)
+         SCB->SCR |= SysCtrl_SLEEPONEXIT_Set;   
+    else
+        SCB->SCR &= ~SysCtrl_SLEEPONEXIT_Set;
+    SCB->SCR &= ~SysCtrl_SLEEPDEEP_Set;   
+    if(PWR_SLEEPEntry == PWR_SLEEPEntry_WFI)          
+        __WFI();                                       
+    else
+        __WFE();                                
 }
 
 /**********************************************************************************************************
-** Function name        :   board_init
-** Descriptions         :   
+** Function name        :   PWR_EnterStandbyMode
+** Descriptions         :   进入待机模式，wakeup、复位、RTC中断、看门狗复位中断唤醒
 ** parameters           :   无
 ** Returned value       :   无
 ***********************************************************************************************************/
-static void _board_gpio_init (void)
+void PWR_EnterStandbyMode(void)
 {
-	// PA6，喂狗
-	GPIO_InitTypeDef GPIO_InitStruct;
-	
-	// 开启外设时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR , ENABLE);
 
-	// 推挽输出
-	GPIO_InitStruct.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStruct.GPIO_Pin = GPIO_Pin_6;
-	GPIO_Init(GPIOA, &GPIO_InitStruct);
+	PWR_WakeUpPinCmd(ENABLE);//PA0
 
-	SP706S_WatchDogFree();
+	PWR_EnterSTANDBYMode();
 }
 
 /**********************************************************************************************************
-** Function name        :   SP706S_WatchDog
-** Descriptions         :   
+** Function name        :   PWR_EnterStopyMode
+** Descriptions         :   进入停机模式，
 ** parameters           :   无
 ** Returned value       :   无
 ***********************************************************************************************************/
-void SP706S_WatchDogFree(void)
-{
-	GPIO_SetBits(GPIOA, GPIO_Pin_6);
-	GPIO_ResetBits(GPIOA, GPIO_Pin_6); 
-}
+//void PWR_EnterStopyMode(void)
+//{
+//	RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR , ENABLE);
 
+//	PWR_WakeUpPinCmd(ENABLE);//PA0
 
-
-
-
+//	PWR_EnterSTOPMode(PWR_Regulator_ON,PWR_STOPEntry_WFI|PWR_STOPEntry_WFE);
+//}

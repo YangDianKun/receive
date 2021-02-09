@@ -50,9 +50,7 @@ typedef struct
 int8_t led_init (void);
 void led_on (uint8_t led_id);
 void led_off (uint8_t led_id);
-void led_toggle (uint8_t led_id);
-void led_single_blink(uint8_t led_id, uint8_t cnt);
-void led_scan(void);	
+void led_toggle (uint8_t led_id);	
 
 
 

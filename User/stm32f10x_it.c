@@ -29,9 +29,13 @@
 
 #define USART_BUF_SIZE      8
 
+
+volatile uint8_t uartBufFlag = 0;
+
+
+
 static uint8_t uartBuf[USART_BUF_SIZE];
-static uint8_t rData;
-static uint8_t rStatus = 0, rDataCnt = 0, uartBufFlag = 0;
+static uint8_t rData = 0, rStatus = 0, rDataCnt = 0;
 
 
 
@@ -46,11 +50,10 @@ void USART2_IRQHandler(void)
 	if (USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  // 接收数据判断
 	{
 		rData = USART_ReceiveData(USART2);        // 读取数据，自动清除 USART_IT_RXNE 标志
-		//if (uartBufFlag)
+		if (!uartBufFlag)
 		{
-			if (0 == rStatus)                     // 数据帧同步
+			if ((0 == rStatus) && (0xD1 == rData))// 数据帧同步
 			{
-				if (0xD1 == rData)                // 接收端数据头
 					rStatus = 1;
 			}
 			else if (1 == rStatus)                // 接收数据
@@ -58,20 +61,19 @@ void USART2_IRQHandler(void)
 				if (rDataCnt < USART_BUF_SIZE)
 				{
 					uartBuf[rDataCnt++] = rData;   // 接收数据到缓冲区
+					if (2 == rDataCnt)
+					{
+						rDataCnt = 0;
+						rStatus = 0;
+						uartBufFlag = 1;
+					}
 				}
-			}	
-		}
-	}
-	else if (USART_GetITStatus(USART2,USART_IT_IDLE) !=  RESET)  // 数据空闲判断
-	{
-		USART_ReceiveData(USART2);   // 读取数据，自动清除 USART_IT_RXNE 标志
-		rStatus = 0;                 // 清除接收状态机
-		if (rDataCnt > 0)            // 接收数据计数判断
-		{
-			rDataCnt = 0;            // 接收数据计数清零
-			//uartBufFlag = 1;
-			led_toggle(LED_2);           // led2 指示灯
-			rmf_option_frame_handle((RemoteFrame_t *)uartBuf); // 数据帧解析
+			}
+			else
+			{
+				rStatus = 0;
+				rDataCnt = 0;
+			}
 		}
 	}
 } 

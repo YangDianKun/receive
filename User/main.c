@@ -23,7 +23,7 @@
 
 
 
-
+extern volatile uint8_t uartBufFlag;
 /**********************************************************************************************************
 ** Function name        :   main
 ** Descriptions         :   
@@ -42,7 +42,28 @@ int main (void)
 	/* while loop */
 	while(1)
 	{	
-		PWR_EnterSleepMode(SysCtrl_SLEEPDEEP_Set, PWR_SLEEPEntry_WFI);
+		/* // 200ms 轮询接收缓冲区 */
+		if ()
+		{
+			if (uartBufFlag)
+			{
+				uartBufFlag = 0;
+				led_toggle(LED_2);           // led2 指示灯
+				rmf_option_frame_handle((RemoteFrame_t *)uartBuf); // 数据帧解析
+			}
+			else
+			{
+				// 没有数据发送 0
+			}
+		}
+
+		/* // 500ms 处理喂狗 */
+		if ()
+		{
+			led_toggle(LED_1);      // 系统运行指示 led
+			SP706S_WatchDogFree();  // 喂狗
+		}
+		//PWR_EnterSleepMode(SysCtrl_SLEEPDEEP_Set, PWR_SLEEPEntry_WFI);
 	}//while end
 }//main end
 

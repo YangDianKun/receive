@@ -99,6 +99,7 @@ void rmf_option_frame_handle(RemoteFrame_t * optData)
 ** parameters           :   нч
 ** Returned value       :   нч
 ***********************************************************************************************************/
+#if 0
 int8_t rfm_data_transmit (void * data, uint8_t dataLen)
 {
 	uint8_t buf[16];
@@ -134,7 +135,7 @@ int8_t rfm_data_transmit (void * data, uint8_t dataLen)
 	
 	return 0;
 }
-
+#endif
 /**********************************************************************************************************
 ** Function name        :   rfm_data_transmit
 ** Descriptions         :   
